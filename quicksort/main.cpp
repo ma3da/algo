@@ -1,38 +1,36 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
-void swap(int*, int, int);
-void quicksort(int*, int, int);
-int partition(int*, int, int);
-void printArray(int*, int);
-void ReadNumbers(int*, std::string);
-void WriteAnswer(int*, int, std::string);
+void swap(std::vector<int>&, const int&, const int&);
+void quicksort(std::vector<int>&, const int&, const int&);
+int partition(std::vector<int>&, const int&, const int&);
+std::vector<int> ReadNumbers(const std::string&);
+void WriteAnswer(const std::vector<int>&, const std::string&);
 
 int main() {
-    int length = 1000000;
-    int a[1000000] = {0};
-    ReadNumbers(a, "numbers.txt");
-    quicksort(a, 0, length - 1);
-    WriteAnswer(a, length, "answer.txt");
+    auto a = ReadNumbers("numbers.txt");
+    quicksort(a, 0, a.size() - 1);
+    WriteAnswer(a, "answer.txt");
 }
 
-void ReadNumbers(int* arr, std::string file_name){
+std::vector<int> ReadNumbers(const std::string& file_name){
     std::ifstream is(file_name);
-    int i = 0, n = 0;
-    while (is >> n) {
-        arr[i] = n;
-        i++;
+    std::vector<int> arr;
+    for (int n = 0; is >> n; ) {
+        arr.push_back(n);
     }
+    return arr;
 }
 
-void WriteAnswer(int* arr, int length, std::string file_name){
+void WriteAnswer(const std::vector<int>& arr, const std::string& file_name){
     std::ofstream os(file_name);
-    for (int i = 0; i < length; i++){
-        os << arr[i] << std::endl;
+    for (const auto& n: arr){
+        os << n << std::endl;
     }
 }
 
-void quicksort(int* arr, int lo, int hi) {
+void quicksort(std::vector<int>& arr, const int& lo, const int& hi) {
     if (lo < hi) {
         int mid = partition(arr, lo, hi);
         quicksort(arr, lo, mid - 1);
@@ -40,7 +38,7 @@ void quicksort(int* arr, int lo, int hi) {
     }
 }
 
-int partition(int* arr, int lo, int hi) {
+int partition(std::vector<int>& arr, const int& lo, const int& hi) {
     int x = arr[hi];
     int i  = lo - 1;
     for (int j = lo; j < hi; j++) {
@@ -53,16 +51,8 @@ int partition(int* arr, int lo, int hi) {
     return i;
 }
 
-void swap(int* arr, int i, int j) {
+void swap(std::vector<int>& arr, const int& i, const int& j) {
     int tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;
-}
-
-void printArray(int* arr, int length){
-    int i = 0;
-    for (; i < length - 1; i++) {
-        std::cout << arr[i] << ", ";
-    }
-    std::cout << arr[i] << std::endl;
 }
