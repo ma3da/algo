@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def swap(arr, i, j):
     arr[i], arr[j] = arr[j], arr[i]
 
@@ -49,13 +52,18 @@ def read_numbers(file_path="numbers.txt"):
     return a
 
 
+def read_numbers_np(file_path="numbers.txt"):
+    a = np.array([])
+    with open(file_path) as f:
+        for line in f:
+            try:
+                np.concatenate([a, np.array([int(line.strip())])])
+            except ValueError:
+                break
+    return a
+
+
 def write_answer(arr, file_path="answer.txt"):
     with open(file_path, "w") as f:
         for n in arr:
             f.write(f"{n}\n")
-
-
-if __name__ == "__main__":
-    a = read_numbers()
-    quicksort(a, 0, len(a) - 1)
-    write_answer(a)

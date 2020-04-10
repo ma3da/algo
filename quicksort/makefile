@@ -1,5 +1,5 @@
 build:
-	g++ -o cpp main.cpp -Wall
+	g++ -o run_quicksort_cpp main.cpp -Wall
 
 run: build
-	./cpp
+	./run_quicksort_cpp
