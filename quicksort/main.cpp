@@ -1,16 +1,35 @@
 #include <iostream>
+#include <fstream>
 
 void swap(int*, int, int);
 void quicksort(int*, int, int);
 int partition(int*, int, int);
 void printArray(int*, int);
+void ReadNumbers(int*, std::string);
+void WriteAnswer(int*, int, std::string);
 
 int main() {
-    int a[] = {1, 9, 7, 5, 5, 6};
-    int length = sizeof(a) / sizeof(*a);
-    printArray(a, length);
-    quicksort(a, 0, 5);
-    printArray(a, length);
+    int length = 1000000;
+    int a[1000000] = {0};
+    ReadNumbers(a, "numbers.txt");
+    quicksort(a, 0, length - 1);
+    WriteAnswer(a, length, "answer.txt");
+}
+
+void ReadNumbers(int* arr, std::string file_name){
+    std::ifstream is(file_name);
+    int i = 0, n = 0;
+    while (is >> n) {
+        arr[i] = n;
+        i++;
+    }
+}
+
+void WriteAnswer(int* arr, int length, std::string file_name){
+    std::ofstream os(file_name);
+    for (int i = 0; i < length; i++){
+        os << arr[i] << std::endl;
+    }
 }
 
 void quicksort(int* arr, int lo, int hi) {
@@ -24,7 +43,7 @@ void quicksort(int* arr, int lo, int hi) {
 int partition(int* arr, int lo, int hi) {
     int x = arr[hi];
     int i  = lo - 1;
-    for (int j=lo; j < hi; j++) {
+    for (int j = lo; j < hi; j++) {
         if (arr[j] <= x) {
             i++;
             swap(arr, i, j);

@@ -49,17 +49,13 @@ def read_numbers(file_path="numbers.txt"):
     return a
 
 
-def check_sorted(a):
-    last = -float("inf")
-    for e in a:
-        if last > e:
-            return False
-        last = e
-    return True
+def write_answer(arr, file_path="answer.txt"):
+    with open(file_path, "w") as f:
+        for n in arr:
+            f.write(f"{n}\n")
 
 
 if __name__ == "__main__":
     a = read_numbers()
-    print(f"sorting {len(a)} elements")
     quicksort(a, 0, len(a) - 1)
-    print(f"sorted: {check_sorted(a)}")
+    write_answer(a)
