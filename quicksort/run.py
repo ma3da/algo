@@ -39,7 +39,7 @@ for cmd in to_run:
         t = time.perf_counter() - start
         print(f"time: {t:.2f}s")
 
-        print(f"correct answer: {check_answer()}")
+        print("answer is correct" if check_answer() else "/!\\ answer is wrong /!\\")
     except Exception as e:
         print(f"Execution failed: {e}")
     finally:
