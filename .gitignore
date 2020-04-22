@@ -1,2 +1,6 @@
 venv
-**.swp
+*.swp
+*.o
+*.cmi
+*.cmo
+*.a
