@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import collections
 import os
 import subprocess
@@ -32,13 +33,6 @@ def to_runnable(fp):
     return None
 
 
-def to_run(folder_path):
-    return filter(lambda r: r is not None,
-           map(to_runnable,
-           map(os.path.abspath,
-           sorted(os.listdir(folder_path)))))
-
-
 def check_answer(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError("No answer file")
@@ -61,7 +55,16 @@ def clean_answer(file_path):
 
 
 if __name__ == "__main__":
-    for runnable in to_run(os.path.dirname(os.path.abspath(__file__))):
+    parser = argparse.ArgumentParser()
+    parser.add_argument("files", nargs="*")
+    args = parser.parse_args()
+
+    folder_path = os.path.dirname(os.path.abspath(__file__))
+    filenames = args.files if args.files else sorted(os.listdir(folder_path))
+
+    for runnable in filter(lambda r: r is not None,
+                    map(to_runnable,
+                    map(os.path.abspath, filenames))):
         print(f"running {runnable.name}")
         try:
             start = time.perf_counter()
