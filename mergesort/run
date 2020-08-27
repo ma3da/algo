@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import argparse
+import collections
+import os
+import subprocess
+import time
+import re
+
+
+ANSWER_FP = os.path.join(os.path.dirname(__file__), "answer.txt")
+LANGS = ("cpp", "jl", "ocaml", "py")
+RE_INFO = re.compile(r"run_([a-z0-9]*)")
+
+
+Runnable = collections.namedtuple("Runnable", ["name", "lang", "cmd_args"])
+
+
+def to_cmd_args(fp, lang):
+    if lang == "py":
+        return ["python3", fp]
+    elif lang == "jl":
+        return ["julia", fp]
+    else:
+        return [fp]
+
+
+def to_runnable(fp):
+    fn = os.path.basename(fp)
+    match = RE_INFO.match(fn)
+    if match:
+        lang = match.group(1)
+        if lang in LANGS:
+            return Runnable(fn, lang, to_cmd_args(fp, lang))
+    return None
+
+
+def check_answer(file_path):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError("No answer file")
+    with open(file_path) as f:
+        for line, sol in zip(f, range(1000000)):
+            if int(line) != sol:
+                return False
+    return True
+
+
+def clean_answer(file_path):
+    try:
+        if os.path.exists(file_path):
+            print("deleting answer file")
+            os.remove(file_path)
+        else:
+            print("no answer file to delete")
+    except Exception as e:
+        print(f"deletion failed: {e}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("files", nargs="*")
+    args = parser.parse_args()
+
+    folder_path = os.path.dirname(os.path.abspath(__file__))
+    filenames = args.files if args.files else sorted(os.listdir(folder_path))
+
+    for runnable in filter(lambda r: r is not None,
+                    map(to_runnable,
+                    map(os.path.abspath, filenames))):
+        print(f"running {runnable.name}")
+        try:
+            start = time.perf_counter()
+            subprocess.run(runnable.cmd_args)
+            t = time.perf_counter() - start
+            print(f"time: {t:.2f}s")
+
+            print("answer is correct" if check_answer(ANSWER_FP)
+                  else "/!\\ answer is wrong /!\\")
+        except Exception as e:
+            print(f"Execution failed: {e}")
+        finally:
+            clean_answer(ANSWER_FP)
+            print()

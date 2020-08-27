@@ -4,3 +4,4 @@ venv
 *.cmi
 *.cmo
 *.a
+__pycache__
