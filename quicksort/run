@@ -70,6 +70,9 @@ if __name__ == "__main__":
                     map(to_runnable,
                     map(os.path.abspath, filenames))):
         print(f"running {runnable.name}")
+        results[runnable.name] = "ongoing..."
+        with open(RESULTS_FP, "w") as f:
+            json.dump(results, f, indent=2)
         try:
             start = time.perf_counter()
             subprocess.run(runnable.cmd_args)
