@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import random
 import tqdm
 import argparse
@@ -6,7 +8,7 @@ file_path = "numbers.txt"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--size", default=1000, type=int)
+    parser.add_argument("size", nargs="?", default=1000, type=int)
     args = parser.parse_args()
 
     numbers = list(range(args.size))
