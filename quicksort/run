@@ -6,9 +6,11 @@ import os
 import subprocess
 import time
 import re
+import json
 
 
 ANSWER_FP = os.path.join(os.path.dirname(__file__), "answer.txt")
+RESULTS_FP = os.path.join(os.path.dirname(__file__), "results.txt")
 LANGS = ("py", "cpp", "ocaml")
 RE_INFO = re.compile(r"run_([a-z0-9]*)")
 
@@ -62,6 +64,8 @@ if __name__ == "__main__":
     folder_path = os.path.dirname(os.path.abspath(__file__))
     filenames = args.files if args.files else sorted(os.listdir(folder_path))
 
+    results = {}
+
     for runnable in filter(lambda r: r is not None,
                     map(to_runnable,
                     map(os.path.abspath, filenames))):
@@ -72,10 +76,16 @@ if __name__ == "__main__":
             t = time.perf_counter() - start
             print(f"time: {t:.2f}s")
 
-            print("answer is correct" if check_answer(ANSWER_FP)
+            is_correct = check_answer(ANSWER_FP)
+            print("answer is correct" if is_correct
                   else "/!\\ answer is wrong /!\\")
+
+            results[runnable.name] = t if is_correct else "Wrong"
         except Exception as e:
             print(f"Execution failed: {e}")
+            results[runnable.name] = "Failed" 
         finally:
             clean_answer(ANSWER_FP)
             print()
+            with open(RESULTS_FP, "w") as f:
+                json.dump(results, f, indent=2)
