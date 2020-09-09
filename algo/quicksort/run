@@ -11,7 +11,7 @@ import json
 
 ANSWER_FP = os.path.join(os.path.dirname(__file__), "answer.txt")
 RESULTS_FP = os.path.join(os.path.dirname(__file__), "results.txt")
-LANGS = ("py", "cpp", "ocaml")
+LANGS = ("cpp", "jl", "ocaml", "py")
 RE_INFO = re.compile(r"run_([a-z0-9]*)")
 
 
@@ -21,6 +21,8 @@ Runnable = collections.namedtuple("Runnable", ["name", "lang", "cmd_args"])
 def to_cmd_args(fp, lang):
     if lang == "py":
         return ["python3", fp]
+    elif lang == "jl":
+        return ["julia", fp]
     else:
         return [fp]
 
