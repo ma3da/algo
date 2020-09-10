@@ -1,0 +1,77 @@
+#!/usr/bin/env python3
+
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+import subprocess
+import os
+import json
+
+app = Flask(__name__,
+            static_folder="build/static",
+            template_folder="build"
+)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+ALGO_DIR = os.path.join(BASE_DIR, "algo")
+
+
+def get_path(algo):
+    return os.path.join(ALGO_DIR, algo)
+
+
+def get_all_algos():
+    return [entry.name for entry in os.scandir(ALGO_DIR)]
+
+
+@app.route('/')
+def index():
+    return render_template('index.html', algos=get_all_algos())
+
+
+@socketio.on("run")
+def run(algo):
+    path = get_path(algo)
+
+    print("starting run for:", algo)
+    print()
+    subprocess.run(["./run"], cwd=path)
+    print("run ended")
+    push(algo)
+
+
+@socketio.on("fetch-algos")
+def push_algos(data):
+    emit("push-algos", {"algos": get_all_algos()})
+
+
+@socketio.on("fetch")
+def push(algo=None):
+    if not algo:
+        algo = "quicksort"
+    path = get_path(algo)
+    with open(os.path.join(path, "results.txt")) as f:
+        emit("update", {"times": json.load(f), "name": algo})
+
+
+@socketio.on("message")
+def print_msg(msg):
+    print(msg)
+
+
+@socketio.on('connect')
+def test_connect():
+    print("Client connected")
+    push()
+
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
+
+if __name__ == '__main__':
+    socketio.run(app,
+                 debug=True,
+                 use_reloader=True)
