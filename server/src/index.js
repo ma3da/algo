@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom';
 import React, { useState, useEffect } from 'react';
 import io from "socket.io-client";
+import "./main.css"
 
 const ENDPOINT = "http://localhost:5000";
 const socket = io(ENDPOINT);
@@ -32,13 +33,19 @@ class AlgoSelect extends React.Component {
 
 function Results(props) {
     const times = Object.entries(props.times).map(([k, v]) => (
-        <li> {k}: {v} </li>
+
+        <tr>
+        <td>{k}</td>
+        <td>
+        {Number.isNaN(Number.parseFloat(v)) ? v : Number.parseFloat(v).toFixed(3) + "s"}
+        </td>
+        </tr>
     ));
     return (
-        <div>
-        <h1> {props.name} </h1>
-        <ul> {times} </ul>
-        </div>
+        <tbody>
+        <tr><th colspan="2"> {props.name} </th></tr>
+        {times}
+        </tbody>
     );
 }
 
@@ -46,9 +53,7 @@ function MainList(props) {
     const resultss = Object.entries(props.list).map(([k, v]) => (
         <Results name={v.name} times={v.times} />
     ));
-    return <div>
-        {resultss}
-    </div>;
+    return <div><table> {resultss} </table></div>;
 }
 
 function Main(props) {
@@ -63,7 +68,7 @@ function Main(props) {
             });
         });
     });
-    return <div>
+    return <div id="main">
         <AlgoSelect
             list={algos}
             fetchAlgo={() => socket.emit("fetch-algos", null)}
