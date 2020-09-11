@@ -41,13 +41,14 @@ def index():
 
 @socketio.on("run")
 def run(algo):
-    path = get_path(algo)
-
-    print("starting run for:", algo)
-    print()
-    subprocess.run(["./run"], cwd=path)
-    print("run ended")
-    push(algo)
+    try:
+        path = get_path(algo)
+        subprocess.run(["./run"], cwd=path)
+        push_results([algo])
+    except Exception as e:
+        print(e)
+        print(f"Algo: '{algo}' could not run")
+        print(f"Tried to execute: {os.path.join(path, 'run')}")
 
 
 @socketio.on("fetch_names")
@@ -56,15 +57,9 @@ def push_names(*args):
 
 
 @socketio.on("fetch_results")
-def push_results(*args):
-    emit("push_results", {algo: to_dict(algo) for algo in get_all_algos()})
-
-
-@socketio.on("fetch")
-def push(algo=None):
-    if not algo:
-        algo = "quicksort"
-    emit("update", {algo: to_dict(algo)})
+def push_results(names=None):
+    algos = get_all_algos() if names is None else names
+    emit("push_results", {algo: to_dict(algo) for algo in algos})
 
 
 @socketio.on("message")

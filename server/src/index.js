@@ -25,8 +25,7 @@ class AlgoSelect extends React.Component {
                 <option value={name}>{name}</option>)
             }
             </select>
-            <button onClick={this.props.fetchAlgo}>fetch</button>
-            <button onClick={() => this.props.runAlgo(this.state.value)}>run</button>
+            <button onClick={() => this.props.run(this.state.value)}>run</button>
         </div>;
     }
 }
@@ -50,7 +49,7 @@ function Results(props) {
 }
 
 function MainList(props) {
-    const resultss = Object.entries(props.list).map(([k, v]) => (
+    const resultss = Object.entries(props.list).sort().map(([k, v]) => (
         <Results name={v.name} times={v.times} />
     ));
     return <div><table> {resultss} </table></div>;
@@ -60,9 +59,8 @@ function Main(props) {
     const [resultss, setResultss] = useState({});
     const [algos, setAlgos] = useState([]);
     useEffect(() => {
-        socket.on("push_names", resp => { setAlgos(resp.algos); });
-        socket.on("push_results", resp => { setResultss(resp); });
-        socket.on("update", resp => { 
+        socket.on("push_names", resp => { setAlgos(resp.algos.sort()); });
+        socket.on("push_results", resp => { 
             setResultss((prevState) => {
                 return {...prevState, ...resp};
             });
@@ -71,8 +69,7 @@ function Main(props) {
     return <div id="main">
         <AlgoSelect
             list={algos}
-            fetchAlgo={() => socket.emit("fetch-algos", null)}
-            runAlgo={(name) => socket.emit("run", name)}
+            run={(name) => socket.emit("run", name)}
         />
         <MainList list={resultss} />
         </div>;
