@@ -25,6 +25,15 @@ def get_all_algos():
     return [entry.name for entry in os.scandir(ALGO_DIR)]
 
 
+def get_results(algo):
+    with open(os.path.join(get_path(algo), "results.txt")) as f:
+        return json.load(f)
+
+
+def to_dict(algo):
+    return {"times": get_results(algo), "name": algo}
+
+
 @app.route('/')
 def index():
     return render_template('index.html', algos=get_all_algos())
@@ -41,18 +50,21 @@ def run(algo):
     push(algo)
 
 
-@socketio.on("fetch-algos")
-def push_algos(data):
-    emit("push-algos", {"algos": get_all_algos()})
+@socketio.on("fetch_names")
+def push_names(*args):
+    emit("push_names", {"algos": get_all_algos()})
+
+
+@socketio.on("fetch_results")
+def push_results(*args):
+    emit("push_results", {algo: to_dict(algo) for algo in get_all_algos()})
 
 
 @socketio.on("fetch")
 def push(algo=None):
     if not algo:
         algo = "quicksort"
-    path = get_path(algo)
-    with open(os.path.join(path, "results.txt")) as f:
-        emit("update", {"times": json.load(f), "name": algo})
+    emit("update", {algo: to_dict(algo)})
 
 
 @socketio.on("message")
@@ -63,7 +75,8 @@ def print_msg(msg):
 @socketio.on('connect')
 def test_connect():
     print("Client connected")
-    push()
+    push_names()
+    push_results()
 
 
 @socketio.on('disconnect')

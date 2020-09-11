@@ -5,18 +5,6 @@ import io from "socket.io-client";
 const ENDPOINT = "http://localhost:5000";
 const socket = io(ENDPOINT);
 
-function TimeList(props) {
-    const times = Object.entries(props.times).map(([k, v]) => (
-        <li> {k}: {v} </li>
-    ));
-    return (
-        <div>
-        <h1> {props.name} </h1>
-        <ul> {times} </ul>
-        </div>
-    );
-}
-
 class AlgoSelect extends React.Component {
     constructor(props) {
         super(props);
@@ -42,22 +30,46 @@ class AlgoSelect extends React.Component {
     }
 }
 
+function Results(props) {
+    const times = Object.entries(props.times).map(([k, v]) => (
+        <li> {k}: {v} </li>
+    ));
+    return (
+        <div>
+        <h1> {props.name} </h1>
+        <ul> {times} </ul>
+        </div>
+    );
+}
+
+function MainList(props) {
+    const resultss = Object.entries(props.list).map(([k, v]) => (
+        <Results name={v.name} times={v.times} />
+    ));
+    return <div>
+        {resultss}
+    </div>;
+}
+
 function Main(props) {
-    const [timelist, setList] = useState("");
+    const [resultss, setResultss] = useState({});
     const [algos, setAlgos] = useState([]);
     useEffect(() => {
+        socket.on("push_names", resp => { setAlgos(resp.algos); });
+        socket.on("push_results", resp => { setResultss(resp); });
         socket.on("update", resp => { 
-            setList([<TimeList name={resp.name} times={resp.times}/>]) ;
+            setResultss((prevState) => {
+                return {...prevState, ...resp};
+            });
         });
-        socket.on("push-algos", resp => { setAlgos(resp.algos); });
-    }, []);
+    });
     return <div>
         <AlgoSelect
             list={algos}
             fetchAlgo={() => socket.emit("fetch-algos", null)}
             runAlgo={(name) => socket.emit("run", name)}
         />
-        <div>{timelist}</div>
+        <MainList list={resultss} />
         </div>;
 }
 
