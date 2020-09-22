@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit
 import subprocess
 import os
 import json
+import importlib.util
 
 app = Flask(__name__,
             static_folder="build/static",
@@ -51,6 +52,18 @@ def run(algo):
         print(f"Tried to execute: {os.path.join(path, 'run')}")
 
 
+@socketio.on("generate")
+def generate(algo):
+    try:
+        path = get_path(algo)
+        subprocess.run(["./generate"], cwd=path)
+        emit("end_generate", algo)
+    except Exception as e:
+        print(e)
+        print(f"Could not generate data for: {algo}")
+        print(f"Tried to execute: {os.path.join(path, 'generate')}")
+
+
 @socketio.on("fetch_names")
 def push_names(*args):
     emit("push_names", {"algos": get_all_algos()})
@@ -77,6 +90,23 @@ def test_connect():
 @socketio.on('disconnect')
 def test_disconnect():
     print('Client disconnected')
+
+
+def get_generate_args(algo):
+    spec = importlib.util.spec_from_file_location(algo, get_path(algo))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m.ARGUMENTS
+
+
+@socketio.on("fetch_generate_args")
+def push_generate_args(algo):
+    try:
+        args = get_generate_args(algo)
+        emit("push_generate_args", list(args))
+    except Exception:
+        emit("notification", f"An error occured while fetching generate args"
+             " for {algo}")
 
 
 if __name__ == '__main__':

@@ -46,7 +46,16 @@ function Results(props) {
         <tbody>
         <tr><th colspan="2"> {props.name} </th></tr>
         <tr><th colspan="2">
-            <button onClick={() => socket.emit("run", props.name)}>run</button>
+            <button disabled={props.generating} 
+                    onClick={() => props.socket.emit("run", props.name)}
+            >run</button>
+            <button
+                disabled={props.generating}
+                onClick={() => {
+                    props.socket.emit("generate", props.name);
+                    props.setgenerating(props.name, true);
+                }}
+            >generate</button>
         </th></tr>
         {times}
         </tbody>
@@ -57,7 +66,13 @@ function MainList(props) {
     const [selected, setSelected] = useState(null);
     const resultss = Object.entries(props.list).sort()
         .filter(([k, v]) => !selected || selected.includes(v.name)).map(([k, v]) => (
-        <Results name={v.name} times={v.times} socket={props.socket}/>
+        <Results
+            name={v.name}
+            times={v.times}
+            socket={props.socket}
+            generating={props.generating}
+            setgenerating={props.setgenerating}
+            />
     ));
     return (
         <div id="main">
@@ -73,6 +88,7 @@ function MainList(props) {
 function Main(props) {
     const [resultss, setResultss] = useState({});
     const [names, setNames] = useState([]);
+    const [generating, setGenerating] = useState(false);
     useEffect(() => {
         socket.on("push_names", resp => { setNames(resp.algos.sort()); });
         socket.on("push_results", resp => { 
@@ -80,8 +96,15 @@ function Main(props) {
                 return {...prevState, ...resp};
             });
         });
+        socket.on("end_generate", resp => { setGenerating(false); });
     });
-    return <MainList names={names} list={resultss} socket={socket}/>;
+    return <MainList 
+        names={names} 
+        list={resultss} 
+        socket={socket}
+        generating={generating}
+        setgenerating={setGenerating}
+        />;
 }
 
 ReactDOM.render(

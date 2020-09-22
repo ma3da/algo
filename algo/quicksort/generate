@@ -6,9 +6,14 @@ import argparse
 
 file_path = "numbers.txt"
 
+ARGUMENTS = {
+    "size": {"nargs": "?", "default": 1000, "type": int}
+}
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("size", nargs="?", default=1000, type=int)
+    for name, kwargs in ARGUMENTS.items():
+        parser.add_argument(name, **kwargs)
     args = parser.parse_args()
 
     numbers = list(range(args.size))
