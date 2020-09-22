@@ -25,7 +25,6 @@ class AlgoSelect extends React.Component {
                 <option value={name}>{name}</option>)
             }
             </select>
-            <button onClick={() => this.props.run(this.state.value)}>run</button>
         </div>;
     }
 }
@@ -43,6 +42,9 @@ function Results(props) {
     return (
         <tbody>
         <tr><th colspan="2"> {props.name} </th></tr>
+        <tr><th colspan="2">
+            <button onClick={() => socket.emit("run", props.name)}>run</button>
+        </th></tr>
         {times}
         </tbody>
     );
@@ -50,7 +52,7 @@ function Results(props) {
 
 function MainList(props) {
     const resultss = Object.entries(props.list).sort().map(([k, v]) => (
-        <Results name={v.name} times={v.times} />
+        <Results name={v.name} times={v.times} socket={props.socket}/>
     ));
     return <div><table> {resultss} </table></div>;
 }
@@ -71,7 +73,7 @@ function Main(props) {
             list={algos}
             run={(name) => socket.emit("run", name)}
         />
-        <MainList list={resultss} />
+        <MainList list={resultss} socket={socket}/>
         </div>;
 }
 
