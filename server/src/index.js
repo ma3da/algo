@@ -10,17 +10,20 @@ class AlgoSelect extends React.Component {
     constructor(props) {
         super(props);
         this.state = {value: ""};
+        this.select = props.select;
         this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event) {
-        this.setState({value: event.target.value});
+        const val = event.target.value === "_all_" ? null : [event.target.value];
+        this.setState({value: val});
+        this.select(val);
     }
     
     render() {
         return <div>
             <select value={this.state.value} onChange={this.handleChange}>
-            <option value="">select</option>
+            <option value="_all_">select</option>
             {this.props.list.map(name => 
                 <option value={name}>{name}</option>)
             }
@@ -51,30 +54,34 @@ function Results(props) {
 }
 
 function MainList(props) {
-    const resultss = Object.entries(props.list).sort().map(([k, v]) => (
+    const [selected, setSelected] = useState(null);
+    const resultss = Object.entries(props.list).sort()
+        .filter(([k, v]) => !selected || selected.includes(v.name)).map(([k, v]) => (
         <Results name={v.name} times={v.times} socket={props.socket}/>
     ));
-    return <div><table> {resultss} </table></div>;
+    return (
+        <div id="main">
+        <AlgoSelect
+            list={props.names}
+            select={setSelected}
+        />
+        <div><table> {resultss} </table></div>
+        </div>
+    );
 }
 
 function Main(props) {
     const [resultss, setResultss] = useState({});
-    const [algos, setAlgos] = useState([]);
+    const [names, setNames] = useState([]);
     useEffect(() => {
-        socket.on("push_names", resp => { setAlgos(resp.algos.sort()); });
+        socket.on("push_names", resp => { setNames(resp.algos.sort()); });
         socket.on("push_results", resp => { 
             setResultss((prevState) => {
                 return {...prevState, ...resp};
             });
         });
     });
-    return <div id="main">
-        <AlgoSelect
-            list={algos}
-            run={(name) => socket.emit("run", name)}
-        />
-        <MainList list={resultss} socket={socket}/>
-        </div>;
+    return <MainList names={names} list={resultss} socket={socket}/>;
 }
 
 ReactDOM.render(
