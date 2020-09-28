@@ -6,6 +6,7 @@ import subprocess
 import os
 import json
 import importlib.util
+import re
 
 app = Flask(__name__,
             static_folder="build/static",
@@ -17,6 +18,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 ALGO_DIR = os.path.join(BASE_DIR, "algo")
 
+RE_INFO = re.compile(r"run_([a-z0-9]*)")
 
 def get_path(algo):
     return os.path.join(ALGO_DIR, algo)
@@ -27,8 +29,14 @@ def get_all_algos():
 
 
 def get_results(algo):
-    with open(os.path.join(get_path(algo), "results.txt")) as f:
-        return json.load(f)
+    results_fp = os.path.join(get_path(algo), "results.txt")
+    if os.path.exists(results_fp):
+        with open(results_fp) as f:
+            return json.load(f)
+    else:
+        runners = filter(lambda fn: RE_INFO.match(fn) is not None,
+                         os.listdir(get_path(algo)))
+        return {name: "?" for name in runners}
 
 
 def to_dict(algo):
