@@ -1,5 +1,24 @@
+body {
+    font-family: helvetica;
+}
+
 #main {
     display: flex;
     flex-direction: column; 
     align-items: center;
+}
+
+#notif-list {
+    position: fixed;
+    right: 10px;
+    bottom: 10px; 
+}
+
+.notif {
+    background-color: black;
+    color: white;
+    font-size: .8em;
+    padding: .5em;
+    padding-left: 1em;
+    padding-right: 1em;
 }

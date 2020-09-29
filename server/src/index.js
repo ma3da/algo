@@ -87,7 +87,22 @@ function MainList(props) {
     );
 }
 
+function Notif(props) {
+    return <div class="notif"> {props.text} </div>;
+}
+
+function NotifList(props) {
+    const notifs = props.notifs.map(n => <Notif text={n.text} />);
+    return (
+        <div id="notif-list">
+        { notifs }
+        <Notif text="notification message" />
+        </div>
+    );
+}
+
 function Main(props) {
+    const [notifs, addNotif] = useState([]);
     const [resultss, setResultss] = useState({});
     const [argss, setArgss] = useState({});
     const [names, setNames] = useState([]);
@@ -106,14 +121,19 @@ function Main(props) {
         });
         socket.on("end_generate", resp => { setGenerating(false); });
     });
-    return <MainList 
+    return (
+        <div>
+        <MainList 
         names={names} 
         list={resultss} 
         argss={argss}
         socket={socket}
         generating={generating}
         setgenerating={setGenerating}
-        />;
+        />
+        <NotifList notifs={notifs} />
+        </div>
+    );
 }
 
 ReactDOM.render(
