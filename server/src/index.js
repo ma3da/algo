@@ -44,9 +44,9 @@ function Results(props) {
     ));
     return (
         <tbody>
-        <tr><th colspan="2"> {props.name} </th></tr>
-        <tr><td colspan="2"> params: {props.args} </td></tr>
-        <tr><th colspan="2">
+        <tr><th colSpan="2"> {props.name} </th></tr>
+        <tr><td colSpan="2"> params: {props.args} </td></tr>
+        <tr><th colSpan="2">
             <button disabled={props.generating} 
                     onClick={() => props.socket.emit("run", props.name)}
             >run</button>
@@ -82,27 +82,31 @@ function MainList(props) {
             list={props.names}
             select={setSelected}
         />
-        <div><table> {resultss} </table></div>
+        <div><table>{resultss}</table></div>
         </div>
     );
 }
 
 function Notif(props) {
-    return <div class="notif"> {props.text} </div>;
+    // useEffect(() => {
+    //     const timeout = setTimeout(() => { props.setnotifs((prevState) =>
+    //         { return prevState.slice(1); }) }, 2000);
+    //     return () => clearTimeout(timeout);
+    // });
+    return <div className="notif"> {props.text} </div>;
 }
 
 function NotifList(props) {
-    const notifs = props.notifs.map(n => <Notif text={n.text} />);
+    const notifs = props.notifs.map(msg => <Notif text={msg} setnotifs={props.setnotifs} />);
     return (
         <div id="notif-list">
         { notifs }
-        <Notif text="notification message" />
         </div>
     );
 }
 
 function Main(props) {
-    const [notifs, addNotif] = useState([]);
+    const [notifs, setNotifs] = useState([]);
     const [resultss, setResultss] = useState({});
     const [argss, setArgss] = useState({});
     const [names, setNames] = useState([]);
@@ -114,12 +118,23 @@ function Main(props) {
                 return {...prevState, ...resp};
             });
         });
+    });
+    useEffect(() => {
         socket.on("push_generate_args", resp => { 
             setArgss((prevState) => {
                 return {...prevState, ...resp};
             });
         });
         socket.on("end_generate", resp => { setGenerating(false); });
+    });
+    useEffect(() => {
+        // ...
+        socket.off("notification").on("notification", resp => {
+            setNotifs((prevState) => { return prevState.concat([resp]); });
+            const timeout = setTimeout(() => { setNotifs((prevState) =>
+                { return prevState.slice(1); }) }, 2000);
+            return () => clearTimeout(timeout);
+        });
     });
     return (
         <div>
@@ -131,7 +146,7 @@ function Main(props) {
         generating={generating}
         setgenerating={setGenerating}
         />
-        <NotifList notifs={notifs} />
+        <NotifList notifs={notifs} setnotifs={setNotifs} />
         </div>
     );
 }

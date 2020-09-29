@@ -54,6 +54,7 @@ def index():
 def run(algo):
     try:
         path = get_path(algo)
+        emit("notification", f"{algo} is running")
         subprocess.run(["./run"], cwd=path)
         push_results([algo])
     except Exception as e:
@@ -81,6 +82,7 @@ def push_names(*args):
 
 @socketio.on("fetch_results")
 def push_results(names=None):
+    emit("notification", "fetching results")
     algos = get_all_names() if names is None else names
     emit("push_results", {algo: to_dict(algo) for algo in algos})
 

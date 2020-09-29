@@ -10,15 +10,15 @@ body {
 
 #notif-list {
     position: fixed;
-    right: 10px;
-    bottom: 10px; 
+    right: 0;
+    bottom: 0; 
 }
 
 .notif {
     background-color: black;
     color: white;
     font-size: .8em;
-    padding: .5em;
-    padding-left: 1em;
-    padding-right: 1em;
+    padding: 1em;
+    margin: 1em;
+    text-align: center;
 }
