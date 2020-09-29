@@ -45,6 +45,7 @@ function Results(props) {
     return (
         <tbody>
         <tr><th colspan="2"> {props.name} </th></tr>
+        <tr><td colspan="2"> params: {props.args} </td></tr>
         <tr><th colspan="2">
             <button disabled={props.generating} 
                     onClick={() => props.socket.emit("run", props.name)}
@@ -69,6 +70,7 @@ function MainList(props) {
         <Results
             name={v.name}
             times={v.times}
+            args={props.argss[v.name]}
             socket={props.socket}
             generating={props.generating}
             setgenerating={props.setgenerating}
@@ -87,6 +89,7 @@ function MainList(props) {
 
 function Main(props) {
     const [resultss, setResultss] = useState({});
+    const [argss, setArgss] = useState({});
     const [names, setNames] = useState([]);
     const [generating, setGenerating] = useState(false);
     useEffect(() => {
@@ -96,11 +99,17 @@ function Main(props) {
                 return {...prevState, ...resp};
             });
         });
+        socket.on("push_generate_args", resp => { 
+            setArgss((prevState) => {
+                return {...prevState, ...resp};
+            });
+        });
         socket.on("end_generate", resp => { setGenerating(false); });
     });
     return <MainList 
         names={names} 
         list={resultss} 
+        argss={argss}
         socket={socket}
         generating={generating}
         setgenerating={setGenerating}
