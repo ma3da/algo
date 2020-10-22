@@ -30,13 +30,29 @@ class AlgoSelect extends React.Component {
     }
 }
 
+function formatTime(s) {
+    if (Number.isNaN(Number.parseFloat(s))) {
+        switch(s) {
+            case "WA":
+            case "failed":
+                return s;
+            case "running":
+                return <i style={{color: "grey"}}>{s}</i>;
+            default:
+                return "?";
+        }
+    } else {
+        return Number.parseFloat(s).toFixed(3) + "s";
+    }
+}
+
 function Results(props) {
     const times = Object.entries(props.times).map(([k, v]) => (
 
         <tr>
         <td>{k}</td>
         <td>
-        {Number.isNaN(Number.parseFloat(v)) ? v : Number.parseFloat(v).toFixed(3) + "s"}
+        {formatTime(v)}
         </td>
         </tr>
     ));
