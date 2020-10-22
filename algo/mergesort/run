@@ -8,6 +8,7 @@ import subprocess
 import time
 import re
 import json
+import typing
 
 
 ANSWER_FP = os.path.join(os.path.dirname(__file__), "answer.txt")
@@ -61,7 +62,10 @@ def clean_answer(file_path):
         print(f"deletion failed: {e}")
 
 
-def main(args):
+def main(args) -> typing.Iterator:
+    """For each runnable found, time it, store and yield result. Previous
+    stored results are deleted if a runnable is found.
+    """
     folder_path = os.path.dirname(os.path.abspath(__file__))
     fps = [os.path.join(folder_path, fn) for fn in args.files]
     if not fps:
@@ -71,9 +75,8 @@ def main(args):
 
     for runnable in filter(lambda r: r is not None,
                     map(to_runnable, fps)):
-        results[runnable.name] = "ongoing..."
-        with open(RESULTS_FP, "w") as f:
-            json.dump(results, f, indent=2)
+        print(f"running {runnable.name}")
+        yield runnable.name, "running"
         try:
             start = time.perf_counter()
             subprocess.run(runnable.cmd_args, cwd=folder_path)
@@ -84,18 +87,21 @@ def main(args):
             print("answer is correct" if is_correct
                   else "/!\\ answer is wrong /!\\")
 
-            results[runnable.name] = t if is_correct else "Wrong"
+            results[runnable.name] = t if is_correct else "WA"
         except Exception as e:
             print(f"Execution failed: {e}")
-            results[runnable.name] = "Failed"
+            results[runnable.name] = "failed"
         finally:
             clean_answer(ANSWER_FP)
             print()
             with open(RESULTS_FP, "w") as f:
                 json.dump(results, f, indent=2)
 
+            yield runnable.name, results[runnable.name]
+
 
 if __name__ == "__main__":
     args = PARSER.parse_args()
 
-    main(args)
+    for _ in main(args):
+        pass

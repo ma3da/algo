@@ -3,8 +3,6 @@ import React, { useState, useEffect } from 'react';
 import io from "socket.io-client";
 import "./main.css"
 
-const ENDPOINT = "http://localhost:5000";
-const socket = io(ENDPOINT);
 
 class AlgoSelect extends React.Component {
     constructor(props) {
@@ -106,36 +104,52 @@ function NotifList(props) {
 }
 
 function Main(props) {
+    const [socket, setSocket] = useState(null);
     const [notifs, setNotifs] = useState([]);
     const [resultss, setResultss] = useState({});
     const [argss, setArgss] = useState({});
     const [names, setNames] = useState([]);
     const [generating, setGenerating] = useState(false);
     useEffect(() => {
+        setSocket(io(
+            "http://localhost:5000",
+            {
+                timeout: 5000
+            }
+        ));
+    }, []);
+    useEffect(() => {
+        if (!socket) return;
+
+        console.log(socket);
         socket.on("push_names", resp => { setNames(resp.algos.sort()); });
         socket.on("push_results", resp => { 
             setResultss((prevState) => {
                 return {...prevState, ...resp};
             });
         });
-    });
+    }, [socket]);
     useEffect(() => {
+        if (!socket) return;
+
         socket.on("push_generate_args", resp => { 
             setArgss((prevState) => {
                 return {...prevState, ...resp};
             });
         });
         socket.on("end_generate", resp => { setGenerating(false); });
-    });
+    }, [socket]);
     useEffect(() => {
+        if (!socket) return;
+
         // ...
-        socket.off("notification").on("notification", resp => {
+        socket.on("notification", resp => {
             setNotifs((prevState) => { return prevState.concat([resp]); });
             const timeout = setTimeout(() => { setNotifs((prevState) =>
                 { return prevState.slice(1); }) }, 2000);
             return () => clearTimeout(timeout);
         });
-    });
+    }, [socket]);
     return (
         <div>
         <MainList 
