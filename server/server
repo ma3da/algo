@@ -4,15 +4,17 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import subprocess
 import os
+import sys
 import json
 import importlib.util
 import re
 import tempfile
 import shutil
 
-app = Flask(__name__,
-            static_folder="build/static",
-            template_folder="build"
+app = Flask(
+    __name__,
+    static_folder="build/static",
+    template_folder="build"
 )
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -21,6 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 ALGO_DIR = os.path.join(BASE_DIR, "algo")
 
 RE_INFO = re.compile(r"run_([a-z0-9]*)")
+
 
 def get_path(algo):
     return os.path.join(ALGO_DIR, algo)
@@ -53,9 +56,16 @@ def index():
 @socketio.on("run")
 def run(algo):
     try:
-        path = get_path(algo)
         emit("notification", f"{algo} is running")
-        subprocess.run(["./run"], cwd=path)
+
+        path = get_path(algo)
+        spec = importlib.util.spec_from_loader(
+            "librun",
+            importlib.machinery.SourceFileLoader("librun", os.path.join(path, "run")))
+        librun = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(librun)
+        librun.main(librun.PARSER.parse_args([]))
+
         push_results([algo])
     except Exception as e:
         print(e)
@@ -106,16 +116,13 @@ def test_disconnect():
 
 
 def get_generate_args(name):
-    # getting spec directly from non .py file doesnt seem to work, hence the garbage
-    with tempfile.TemporaryDirectory() as dirname:
-        dir_path = os.path.abspath(dirname)
-        new_fp = os.path.join(dir_path, "generate.py")
-        shutil.copy(os.path.join(get_path(name), "generate"),
-                    new_fp)
-        spec = importlib.util.spec_from_file_location("generate", new_fp)
-        m = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(m)
-        return m.ARGUMENTS
+    fp = os.path.join(get_path(name), "libgen")
+    spec = importlib.util.spec_from_loader(
+        "libgen",
+        importlib.machinery.SourceFileLoader("libgen", fp))
+    libgen = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(libgen)
+    return libgen.ARGUMENTS
 
 
 @socketio.on("fetch_generate_args")
