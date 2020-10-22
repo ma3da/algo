@@ -2,6 +2,7 @@ import ReactDOM from 'react-dom';
 import React, { useState, useEffect } from 'react';
 import io from "socket.io-client";
 import "./main.css"
+import axios from "axios";
 
 
 class AlgoSelect extends React.Component {
@@ -46,9 +47,14 @@ function formatTime(s) {
     }
 }
 
-function Results(props) {
-    const times = Object.entries(props.times).map(([k, v]) => (
+function ResultsPlot(props) {
+    return props.data ? <img src={"data:image/png;base64," + props.data} />
+                      : <span>no plot</span>;
+}
 
+function Results(props) {
+    const [data, setData] = useState("");
+    const times = Object.entries(props.times).map(([k, v]) => (
         <tr>
         <td>{k}</td>
         <td>
@@ -56,6 +62,12 @@ function Results(props) {
         </td>
         </tr>
     ));
+    useEffect(() => {
+        axios
+          .get("/plot/" + props.name)
+          .then(resp => setData(resp.data))
+          .catch(console.log);
+    });
     return (
         <tbody>
         <tr><th colSpan="2"> {props.name} </th></tr>
@@ -73,6 +85,9 @@ function Results(props) {
             >generate</button>
         </th></tr>
         {times}
+        <tr>
+        <td colSpan="2"><ResultsPlot data={data}/></td>
+        </tr>
         </tbody>
     );
 }
@@ -137,7 +152,6 @@ function Main(props) {
     useEffect(() => {
         if (!socket) return;
 
-        console.log(socket);
         socket.on("push_names", resp => { setNames(resp.algos.sort()); });
         socket.on("push_results", resp => { 
             setResultss((prevState) => {

@@ -7,6 +7,9 @@ import os
 import json
 import importlib.util
 import re
+from matplotlib.figure import Figure
+import io
+import base64
 
 
 app = Flask(
@@ -141,6 +144,27 @@ def push_generate_args(names=None):
         emit("notification", f"An error occured while fetching generate args"
              " for {algo}")
         print(e)
+
+
+@app.route("/plot/<algo>", methods=["GET"])
+def plot(algo):
+    widths, labels = [], []
+    for name, t in to_dict(algo)["times"].items():
+        labels.append(name)
+        try:
+            widths.append(float(t))
+        except ValueError:
+            widths.append(0)
+    if not widths:
+        return ""
+    fig = Figure(figsize=(5, .5 * (len(widths) + 1)))
+    ax = fig.subplots()
+    ax.barh(y=tuple(range(len(widths))), width=widths, tick_label=labels)
+    b = io.BytesIO()
+    fig.set_tight_layout(True)
+    fig.savefig(b, format="png")
+    data = base64.b64encode(b.getbuffer()).decode("ascii")
+    return data
 
 
 if __name__ == '__main__':
