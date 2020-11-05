@@ -21,4 +21,4 @@ if __name__ == "__main__":
     a = read_numbers(input_fp)
     c = count_inversions(a)
     with open(output_fp, "w") as f:
-        f.write(c)
+        f.write(str(c))
