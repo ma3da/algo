@@ -11,8 +11,12 @@ import json
 import typing
 
 
-ANSWER_FP = os.path.join(os.path.dirname(__file__), "answer.txt")
-RESULTS_FP = os.path.join(os.path.dirname(__file__), "results.txt")
+DATA_FP = os.path.join(os.path.dirname(__file__), "data")
+INPUT_FP = os.path.join(DATA_FP, "input.txt")
+ANSWER_FP = os.path.join(DATA_FP, "answer.txt")
+OUTPUT_FP = os.path.join(DATA_FP, "output.txt")
+RESULTS_FP = os.path.join(DATA_FP, "results.txt")
+TIMEOUT = 60
 LANGS = ("cpp", "jl", "ocaml", "py")
 RE_INFO = re.compile(r"run_([a-z0-9]*)")
 PARSER = argparse.ArgumentParser()
@@ -41,23 +45,25 @@ def to_runnable(fp):
     return None
 
 
-def check_answer(file_path):
-    if not os.path.exists(file_path):
+def check_output(fpo=OUTPUT_FP, fpa=ANSWER_FP):
+    if not os.path.exists(fpa):
         raise FileNotFoundError("No answer file")
-    with open(file_path) as f:
-        for line, sol in zip(f, range(1000000)):
-            if int(line) != sol:
+    if not os.path.exists(fpo):
+        raise FileNotFoundError("No output file")
+    with open(fpa) as fa, open(fpo) as fo:
+        for out, ans in zip(fo, fa):
+            if out != ans:
                 return False
     return True
 
 
-def clean_answer(file_path):
+def clean_output(fp=OUTPUT_FP):
     try:
-        if os.path.exists(file_path):
-            print("deleting answer file")
-            os.remove(file_path)
+        if os.path.exists(fp):
+            print("deleting output file")
+            os.remove(fp)
         else:
-            print("no answer file to delete")
+            print("no ouput file to delete")
     except Exception as e:
         print(f"deletion failed: {e}")
 
@@ -66,6 +72,8 @@ def main(args) -> typing.Iterator:
     """For each runnable found, time it, store and yield result. Previous
     stored results are deleted if a runnable is found.
     """
+    if not os.path.exists(DATA_FP):
+        os.makedirs(DATA_FP)
     folder_path = os.path.dirname(os.path.abspath(__file__))
     fps = [os.path.join(folder_path, fn) for fn in args.files]
     if not fps:
@@ -79,20 +87,30 @@ def main(args) -> typing.Iterator:
         yield runnable.name, "running"
         try:
             start = time.perf_counter()
-            subprocess.run(runnable.cmd_args, cwd=folder_path)
+
+            paths = f"{os.path.abspath(INPUT_FP)}\n{os.path.abspath(OUTPUT_FP)}"
+            subprocess.run(runnable.cmd_args,
+                           cwd=folder_path,
+                           input=paths,
+                           text=True,
+                           timeout=TIMEOUT)
+
             t = time.perf_counter() - start
             print(f"time: {t:.2f}s")
 
-            is_correct = check_answer(ANSWER_FP)
+            is_correct = check_output()
             print("answer is correct" if is_correct
                   else "/!\\ answer is wrong /!\\")
 
             results[runnable.name] = t if is_correct else "WA"
+        except subprocess.TimeoutExpired:
+            print(f"Execution failed: Time limit exceeded")
+            results[runnable.name] = "TLE"
         except Exception as e:
             print(f"Execution failed: {e}")
             results[runnable.name] = "failed"
         finally:
-            clean_answer(ANSWER_FP)
+            clean_output()
             print()
             with open(RESULTS_FP, "w") as f:
                 json.dump(results, f, indent=2)

@@ -1,7 +1,9 @@
 #include "utils.h"
 
 int main() {
-    auto a =  ReadNumbers("numbers.txt");
+    std::string input_fp, output_fp;
+    std::cin >> input_fp >> output_fp;
+    auto a = ReadNumbers(input_fp);
     for (ulong i = 0; i < a.size() - 1; ++i) {
         for (ulong j = a.size() - 1; j > i; --j) {
             if (a[j] < a[j - 1]) {
@@ -9,5 +11,5 @@ int main() {
             }
         }
     }
-    WriteAnswer(a, "answer.txt"); 
+    WriteAnswer(a, output_fp); 
 }

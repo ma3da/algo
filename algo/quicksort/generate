@@ -19,6 +19,9 @@ if __name__ == "__main__":
         parser.add_argument(name, **kwargs)
     args = parser.parse_args()
 
+    if not os.path.exists(DATA_FP):
+        os.makedirs(DATA_FP)
+
     numbers = list(range(args.size))
     with open(ANSWER_FP, "w") as f:
         for n in tqdm.tqdm(numbers):

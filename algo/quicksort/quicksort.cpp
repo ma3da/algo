@@ -1,13 +1,14 @@
-#include <vector>
 #include "utils.h"
 
 void quicksort(std::vector<int>&, const int&, const int&);
 int partition(std::vector<int>&, const int&, const int&);
 
 int main() {
-    auto a = ReadNumbers("numbers.txt");
+    std::string input_fp, output_fp;
+    std::cin >> input_fp >> output_fp;
+    auto a = ReadNumbers(input_fp);
     quicksort(a, 0, a.size() - 1);
-    WriteAnswer(a, "answer.txt");
+    WriteAnswer(a, output_fp);
 }
 
 void quicksort(std::vector<int>& arr, const int& lo, const int& hi) {

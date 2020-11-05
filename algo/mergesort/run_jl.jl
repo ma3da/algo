@@ -22,13 +22,15 @@ function merge(a, p, q, r)
     end
 end
 
-f = open("numbers.txt")
+input_fp = readline()
+output_fp = readline()
+f = open(input_fp)
 a = [parse(Int, s) for s in  readlines(f)]
 close(f)
 
 mergesort(a, 1, length(a))
 
-open("answer.txt", "w") do f
+open(output_fp, "w") do f
     for n in a
         write(f, "$n\n")
     end

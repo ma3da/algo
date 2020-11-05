@@ -1,33 +1,17 @@
-#include <vector>
+#include "utils.h"
 #include <fstream>
 #include <limits>
 void MergeSort(std::vector<int>& a, int p, int r);
 void Merge(std::vector<int>& a, int p, int q, int r);
-std::vector<int> ReadNumbers(const std::string&);
-void WriteAnswer(const std::vector<int>&, const std::string&);
 
 int INF = std::numeric_limits<int>::max(); // hm...
 
 int main() {
-    auto a = ReadNumbers("numbers.txt");
+    std::string input_fp, output_fp;
+    std::cin >> input_fp >> output_fp;
+    auto a = ReadNumbers(input_fp);
     MergeSort(a, 0, a.size() - 1);
-    WriteAnswer(a, "answer.txt");
-}
-
-std::vector<int> ReadNumbers(const std::string& file_name){
-    std::ifstream is(file_name);
-    std::vector<int> arr;
-    for (int n = 0; is >> n; ) {
-        arr.push_back(n);
-    }
-    return arr;
-}
-
-void WriteAnswer(const std::vector<int>& arr, const std::string& file_name){
-    std::ofstream os(file_name);
-    for (const auto& n: arr){
-        os << n << std::endl;
-    }
+    WriteAnswer(a, output_fp);
 }
 
 void MergeSort(std::vector<int>& a, int p, int r) {

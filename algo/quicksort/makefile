@@ -1,4 +1,5 @@
-CPPFLAGS = -Wall -I..
+CPPFLAGS = -Wall -I../../include
+
 default:
 	echo No
 

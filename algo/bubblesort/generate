@@ -3,8 +3,11 @@
 import random
 import tqdm
 import argparse
+import os
 
-file_path = "numbers.txt"
+DATA_FP = os.path.join(os.path.dirname(__file__), "data")
+INPUT_FP = os.path.join(DATA_FP, "input.txt")
+ANSWER_FP = os.path.join(DATA_FP, "answer.txt")
 
 ARGUMENTS = {
     "size": {"nargs": "?", "default": 1000, "type": int}
@@ -16,9 +19,17 @@ if __name__ == "__main__":
         parser.add_argument(name, **kwargs)
     args = parser.parse_args()
 
+    if not os.path.exists(DATA_FP):
+        os.makedirs(DATA_FP)
+
     numbers = list(range(args.size))
-    random.shuffle(numbers)
-    with open(file_path, "w") as f:
+    with open(ANSWER_FP, "w") as f:
         for n in tqdm.tqdm(numbers):
             f.write(f"{n}\n")
-    print(f"wrote {file_path}, with {args.size} elements")
+    print(f"wrote {ANSWER_FP}, with {args.size} elements")
+
+    random.shuffle(numbers)
+    with open(INPUT_FP, "w") as f:
+        for n in tqdm.tqdm(numbers):
+            f.write(f"{n}\n")
+    print(f"wrote {INPUT_FP}, with {args.size} elements")
