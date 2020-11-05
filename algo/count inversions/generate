@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import random
+import tqdm
+import argparse
+import os
+
+DATA_FP = os.path.join(os.path.dirname(__file__), "data")
+INPUT_FP = os.path.join(DATA_FP, "input.txt")
+ANSWER_FP = os.path.join(DATA_FP, "answer.txt")
+
+ARGUMENTS = {
+}
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    for name, kwargs in ARGUMENTS.items():
+        parser.add_argument(name, **kwargs)
+    args = parser.parse_args()
+
+    permutation = [0, 1, 2, 4, 3, 5, 6, 9, 7, 8]
+
+    with open(INPUT_FP, "w") as f:
+        for n in tqdm.tqdm(permutation):
+            f.write(f"{n}\n")
+    print(f"wrote {INPUT_FP}, with 10 elements")
+
+    with open(ANSWER_FP, "w") as f:
+        f.write(3)
