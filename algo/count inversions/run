@@ -4,6 +4,7 @@ import argparse
 import collections
 import os
 import operator
+import itertools
 import subprocess
 import time
 import re
@@ -51,8 +52,10 @@ def check_output(fpo=OUTPUT_FP, fpa=ANSWER_FP):
     if not os.path.exists(fpo):
         raise FileNotFoundError("No output file")
     with open(fpa) as fa, open(fpo) as fo:
-        for out, ans in zip(fo, fa):
-            if out != ans:
+        for out, ans in itertools.zip_longest(fo, fa, fillvalue=None):
+            if out is None or ans is None:
+                return False
+            if out.strip() != ans.strip():
                 return False
     return True
 
