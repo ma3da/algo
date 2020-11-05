@@ -1,7 +1,7 @@
 import array
 
 
-def read_numbers(file_path="numbers.txt"):
+def read_numbers(file_path):
     a = []
     with open(file_path) as f:
         for line in f:
@@ -12,7 +12,7 @@ def read_numbers(file_path="numbers.txt"):
     return a
 
 
-def read_numbers_array(file_path="numbers.txt"):
+def read_numbers_array(file_path):
     a = array.array("l")
     with open(file_path) as f:
         for line in f:
@@ -23,19 +23,19 @@ def read_numbers_array(file_path="numbers.txt"):
     return a
 
 
-def read_numbers_bytes(file_path="numbers.txt", n=1_000_000):
+def read_numbers_bytes(file_path, n=1_000_000):
     a = array.array("l")
     with open(file_path, "rb") as f:
         a.fromfile(f, n)
     return a
 
 
-def write_answer(arr, file_path="answer.txt"):
+def write_answer(arr, file_path):
     with open(file_path, "w") as f:
         for n in arr:
             f.write(f"{n}\n")
 
 
-def write_answer_bytes(arr, file_path="answer.txt"):
+def write_answer_bytes(arr, file_path):
     with open(file_path, "wb") as f:
         arr.tofile(f)

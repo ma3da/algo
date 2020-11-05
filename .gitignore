@@ -6,5 +6,4 @@ venv
 *.a
 __pycache__
 
-results.txt
-answer.txt
+data
