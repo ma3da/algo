@@ -23,7 +23,6 @@ if __name__ == "__main__":
     with open(INPUT_FP, "w") as f:
         for n in tqdm.tqdm(permutation):
             f.write(f"{n}\n")
-    print(f"wrote {INPUT_FP}, with 10 elements")
 
     with open(ANSWER_FP, "w") as f:
-        f.write(3)
+        f.write(str(3))
